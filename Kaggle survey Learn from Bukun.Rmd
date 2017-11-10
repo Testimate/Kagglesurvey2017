@@ -1,0 +1,177 @@
+---
+title: "Kaggle survey visulization inspired from Bukun"
+author: "Yuqing Xue"
+date: "November 2, 2017"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message = FALSE, warning = FALSE}
+library(tidyverse)
+library(DT) # datatable
+library(stringr)
+```
+
+```{r message = FALSE, warning = FALSE}
+freeformResponses = read_csv("/Users/apple/Desktop/Yuqing R Work/Kaggle!/kaggle-survey-2017/freeformResponses.csv")
+
+multipleChoiceResponses = read_csv("/Users/apple/Desktop/Yuqing R Work/Kaggle!/kaggle-survey-2017/multipleChoiceResponses.csv")
+
+schema = read_csv("/Users/apple/Desktop/Yuqing R Work/Kaggle!/kaggle-survey-2017/schema.csv")
+```
+
+```{r}
+# colnames(multipleChoiceResponses)
+nrow(multipleChoiceResponses)
+
+```
+
+```{r}
+# table(multipleChoiceResponses$Country)
+```
+
+<br>
+
+
+
+#### Data Cleaning: China /Taiwan (overwrite the dataset)
+```{r}
+multipleChoiceResponses = multipleChoiceResponses %>%
+  mutate(Country = ifelse(Country == "Republic of China", "Taiwan", 
+                            ifelse(Country == "People 's Republic of China", "China",
+                                   Country)))
+```
+
+
+### 
+
+
+```{r}
+coolYellow = "#F1C40F" 
+coolLightGreen = "#7aaa0a"
+```
+
+<br>
+
+####  A. Which country has the youngest data scientists? 
+##### 1. Data Preparation
+
+```{r}
+multipleChoiceResponses %>%
+  filter(!is.na(Country)) %>%  
+  group_by(Country) %>%
+  summarise(AgeMedian = median(Age,na.rm = TRUE)) %>%
+  # ungroup() %>%
+  mutate(Country = reorder(Country,AgeMedian)) %>%  # order Country by AgeMedian
+  arrange(AgeMedian) %>%  # default is ascending
+  head(15) 
+```
+
+```{r Nov.6 Mon add AgeMean,datatable}
+multipleChoiceResponses %>%
+  filter(!is.na(Country)) %>%  
+  group_by(Country) %>%
+  summarise(AgeMedian = median(Age,na.rm = TRUE), AgeMean = round(mean(Age, na.rm = TRUE), digit = 1)) %>%
+  # ungroup() %>%
+  # mutate(Country = reorder(Country,AgeMedian)) %>%  # order Country by AgeMedian
+  arrange(AgeMedian) %>%  # default is ascending. !not arrange(AgeMedian, AgeMean)
+  datatable(filter = 'top', 
+            #options = list(pageLength = 15),
+             caption = htmltools::tags$caption(
+               style = 'caption-side: bottom; text-align: center;',
+                'Table 1. ', htmltools::em('Median and Mean Ages of Respondents by Country.')
+    )
+  )
+  
+```
+
+
+```{r checkAgeResult}
+multipleChoiceResponses %>% 
+  filter(Country == 'China') %>%
+  summarise(meanAge = mean(Age, na.rm = T), medianAge = median(Age, na.rm = T))
+```
+
+
+<br>
+
+`datatable`: Inspired from <https://www.kaggle.com/ikleiman/data-scientists-salaries-around-the-world> 
+
+Documentation from <https://rstudio.github.io/DT/>
+
+<br>
+
+##### 2. Barplot Initiating
+
+
+```{r}
+multipleChoiceResponses %>%
+  filter(!is.na(Country)) %>%
+  group_by(Country) %>%
+  summarise(AgeMedian = median(Age,na.rm = TRUE)) %>%
+  # ungroup() %>%
+  mutate(Country = reorder(Country,AgeMedian)) %>%
+  arrange(AgeMedian) %>%
+  head(10) %>%  # 
+  
+  ggplot(aes(x = Country,y = AgeMedian)) +
+  geom_bar(stat = 'identity', fill = coolLightGreen) 
+```
+
+`stat = 'identity'`: The heights of the bars commonly represent one of two things: either a count of cases in each group, or the values in a column of the data frame. By default, geom_bar uses stat="bin". This makes the height of each bar equal to the number of cases in each group, and it is incompatible with mapping values to the y aesthetic. If you want the heights of the bars to represent values in the data, use stat="identity" and map a value to the y aesthetic.
+
+[geom_bar, stat = 'identity'](https://www.rdocumentation.org/packages/ggplot2/versions/1.0.1/topics/geom_bar)
+
+
+
+<br>
+
+##### 3. Adjusting and Polishing 
+
+```{r}
+nsample = 10
+
+multipleChoiceResponses %>%
+  filter(!is.na(Country)) %>%
+  group_by(Country) %>%
+  summarise(AgeMedian = median(Age,na.rm = TRUE)) %>%
+  # ungroup() %>%
+  mutate(Country = reorder(Country,AgeMedian)) %>%
+  arrange(AgeMedian) %>%
+  head(nsample) %>%  # elegant way
+  
+  ggplot(aes(x = Country,y = AgeMedian, label = AgeMedian)) +
+  geom_bar(stat = 'identity', fill = coolLightGreen) +
+  geom_label(hjust = 0.5, vjust = 0.5, size = 3.3) + 
+  labs(x = "", y = "Median age of the responders", title = str_c("Top ", nsample, " ", "Country With the Youngest Data Scientist Talent" )) + 
+  coord_flip() + 
+  # theme_bw()   # dark-on-light, work better for presentations
+  theme_gray()
+```
+
+
+<br>
+
+####  B. Gender Distribution
+##### 1. Data Preparation
+
+```{r}
+multipleChoiceResponses %>%
+  filter(!is.na(GenderSelect)) %>%  
+  group_by(GenderSelect) %>%
+  summarise(count = n()) %>%  # like table in base R to deal with categorical data
+  ungroup() %>%
+  mutate(GenderSelect = reorder(GenderSelect, count)) %>%  # order Country by AgeMedian
+  arrange(desc(count))   # default is ascending
+   
+```
+
+
+
+
+
