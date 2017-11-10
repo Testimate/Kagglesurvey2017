@@ -161,14 +161,31 @@ multipleChoiceResponses %>%
 ##### 1. Data Preparation
 
 ```{r}
+NoOfRows = nrow(multipleChoiceResponses)
+createLabel = function(Count,NoOfRows)
+{
+  return ( str_c(" ( ", Count, " - ", round(Count/NoOfRows,digit = 2), " %)"  ) )
+}
+
+
 multipleChoiceResponses %>%
   filter(!is.na(GenderSelect)) %>%  
   group_by(GenderSelect) %>%
   summarise(count = n()) %>%  # like table in base R to deal with categorical data
   ungroup() %>%
   mutate(GenderSelect = reorder(GenderSelect, count)) %>%  # order Country by AgeMedian
-  arrange(desc(count))   # default is ascending
-   
+  arrange(desc(count)) %>%  # default is ascending
+  
+  ggplot(aes(x = GenderSelect,y = count)) +
+  geom_bar(stat = 'identity', fill = coolYellow) +
+  geom_text(aes(x = GenderSelect, y = 1, label = createLabel (count,NoOfRows) ),
+            hjust = 0, vjust =.5, size = 4, colour = 'black',
+            fontface = 'bold') +
+  labs(x = 'Gender', 
+       y = 'count', 
+       title = 'Gender and Count') +
+  coord_flip() + 
+  theme_bw()
 ```
 
 
