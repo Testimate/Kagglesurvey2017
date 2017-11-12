@@ -184,7 +184,7 @@ multipleChoiceResponses %>%
 NoOfRows = nrow(multipleChoiceResponses)
 labelPerc = function(Count,NoOfRows)
 {
-  return( str_c("( ", Count, " - ", round(Count/NoOfRows,digit = 2), "%)"  ) )
+  return( str_c("( ", Count, " - ", round(Count/NoOfRows * 100, digit = 2), "%)"  ) )
 }
 
 
@@ -201,7 +201,7 @@ multipleChoiceResponses %>%
   geom_text(aes(x = GenderSelect, y = 0, label = labelPerc(count,NoOfRows) ),
             hjust = 0, vjust = .5, size = 4, colour = 'black', family = "sans",
             fontface = 'bold') +  # bold, plain
-  labs(x = 'Gender', 
+  labs(x = '', 
        y = 'count', 
        title = 'Gender and Count') +
   coord_flip() 
