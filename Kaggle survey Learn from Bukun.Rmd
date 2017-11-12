@@ -202,8 +202,8 @@ multipleChoiceResponses %>%
             hjust = 0, vjust = .5, size = 4, colour = 'black', family = "sans",
             fontface = 'bold') +  # bold, plain
   labs(x = '', 
-       y = 'count', 
-       title = 'Gender and Count') +
+       y = 'Gender Frequency Count', 
+       title = 'Gender Frequency and Percentage') +
   coord_flip() 
 ```
 
