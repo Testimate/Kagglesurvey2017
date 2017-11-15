@@ -47,7 +47,11 @@ multipleChoiceResponses = multipleChoiceResponses %>%
                                    Country)))
 ```
 
+##### To ensure that we keep our raw data un-touched, we'll create a duplicate dataframe called "cleanMCR"
 
+```{r}
+cleanMCR <- multipleChoiceResponses
+```
 #### cool colors 
 
 <http://www.colorhexa.com/b2ba0b>
@@ -63,7 +67,7 @@ coolLightGreen = "#7aaa0a"
 ##### 1. Data Preparation
 
 ```{r}
-multipleChoiceResponses %>%
+cleanMCR %>%
   filter(!is.na(Country)) %>%  
   group_by(Country) %>%
   summarise(AgeMedian = median(Age,na.rm = TRUE)) %>%
@@ -74,7 +78,7 @@ multipleChoiceResponses %>%
 ```
 
 ```{r Nov.6 Mon add AgeMean,datatable}
-multipleChoiceResponses %>%
+cleanMCR %>%
   filter(!is.na(Country)) %>%  
   group_by(Country) %>%
   summarise(AgeMedian = median(Age,na.rm = TRUE), AgeMean = round(mean(Age, na.rm = TRUE), digit = 1)) %>%
@@ -93,7 +97,7 @@ multipleChoiceResponses %>%
 
 
 ```{r checkAgeResult}
-multipleChoiceResponses %>% 
+cleanMCR %>% 
   filter(Country == 'China') %>%
   summarise(meanAge = mean(Age, na.rm = T), medianAge = median(Age, na.rm = T))
 ```
@@ -111,7 +115,7 @@ Documentation from <https://rstudio.github.io/DT/>
 
 
 ```{r}
-multipleChoiceResponses %>%
+cleanMCR %>%
   filter(!is.na(Country)) %>%
   group_by(Country) %>%
   summarise(AgeMedian = median(Age,na.rm = TRUE)) %>%
@@ -137,7 +141,7 @@ multipleChoiceResponses %>%
 ```{r}
 nsample = 10
 
-multipleChoiceResponses %>%
+cleanMCR %>%
   filter(!is.na(Country)) %>%
   group_by(Country) %>%
   summarise(AgeMedian = median(Age,na.rm = TRUE)) %>%
@@ -162,14 +166,13 @@ multipleChoiceResponses %>%
 ##### 1. Data Preparation
 
 ```{r}
-NoOfRows = nrow(multipleChoiceResponses)
+NoOfRows = nrow(cleanMCR)
 createLabel = function(Count,NoOfRows)
 {
   return ( str_c(" ( ", Count, " - ", round(Count/NoOfRows,digit = 2), " %)"  ) )
 }
 
-
-multipleChoiceResponses %>%
+cleanMCR %>%
   filter(!is.na(GenderSelect)) %>%  
   group_by(GenderSelect) %>%
   summarise(count = n()) %>%  # like table in base R to deal with categorical data
@@ -178,10 +181,38 @@ multipleChoiceResponses %>%
   arrange(desc(count)) # default is ascending
 ```
 
+##### A better approach to generate these tables is through function, which can be learned from a kernel from `Amber Thomas`, whose multiple kernels were used in the official Kaggle report. [Amber Thomas's kernel](https://www.kaggle.com/amberthomas/kaggle-2017-survey-results)
+
+```{r}
+# A function to analyze questions where you choose only one answer
+chooseOne = function(question, filteredData = cleanMCR){
+  
+  filteredData %>% 
+    # Remove any rows where the respondent didn't answer the question
+    filter(!UQ(sym(question)) == "") %>% 
+    # Group by the responses to the question
+    group_by_(question) %>% 
+    # Count how many respondents selected each option
+    summarise(count = n()) %>% 
+    # Calculate what percent of respondents selected each option
+    mutate(percent = (count / sum(count)) * 100) %>% 
+    # Arrange the counts in descending order
+    arrange(desc(count))
+}
+  
+```
+
+```{r}
+chooseOne("GenderSelect")
+```
+
+
+
 #### A Table like this should be suffice. If a barplot is desired, then it can be created in this way:
 
 ```{r}
 NoOfRows = nrow(multipleChoiceResponses)
+# create a function to put percentage on bars
 labelPerc = function(Count,NoOfRows)
 {
   return( str_c("( ", Count, " - ", round(Count/NoOfRows * 100, digit = 2), "%)"  ) )
@@ -203,7 +234,7 @@ multipleChoiceResponses %>%
             fontface = 'bold') +  # bold, plain
   labs(x = '', 
        y = 'Gender Frequency Count', 
-       title = 'Gender Frequency and Percentage') +
+       title = 'Gender Frequency and Percentage Among All ') +
   coord_flip() 
 ```
 
