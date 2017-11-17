@@ -182,7 +182,7 @@ cleanMCR %>%
   arrange(desc(count)) # default is ascending
 ```
 
-##### A better approach to generate these tables is through function, which can be learned from a kernel from `Amber Thomas`, whose multiple kernels were used in the official Kaggle report. [Amber Thomas's kernel](https://www.kaggle.com/amberthomas/kaggle-2017-survey-results)
+##### A better approach to generate these tables is through function. A great example can be followed from a kernel from `Amber Thomas`, whose multiple kernels were used in the official Kaggle report. [Amber Thomas's kernel](https://www.kaggle.com/amberthomas/kaggle-2017-survey-results).
 
 ```{r}
 # A function to analyze questions where you choose only one answer
@@ -190,13 +190,13 @@ chooseOne = function(question, filteredData = cleanMCR){
   
   filteredData %>% 
     # Remove any rows where the respondent didn't answer the question
-    filter(!UQ(sym(question)) == "") %>% 
+    filter(!UQ(sym(question)) == "") %>%   # function UQ from library rlang
     # Group by the responses to the question
     group_by_(question) %>% 
     # Count how many respondents selected each option
     summarise(count = n()) %>% 
     # Calculate what percent of respondents selected each option
-    mutate(percent = (count / sum(count)) * 100) %>% 
+    mutate(percent = round(count / sum(count) * 100, digit = 2)) %>%  # add digit
     # Arrange the counts in descending order
     arrange(desc(count))
 }
@@ -205,6 +205,9 @@ chooseOne = function(question, filteredData = cleanMCR){
 
 ```{r}
 chooseOne("GenderSelect")
+chooseOne("Country")
+chooseOne("EmploymentStatus")
+chooseOne("LearningDataScience")
 ```
 
 
