@@ -18,6 +18,9 @@ library(stringr)
 library(rlang) # for 'UQ'
 ```
 
+### A Potential to make a Shiny App
+
+
 ```{r message = FALSE, warning = FALSE}
 freeformResponses = read_csv("/Users/apple/Desktop/Yuqing R Work/Kaggle!/kaggle-survey-2017/freeformResponses.csv")
 
