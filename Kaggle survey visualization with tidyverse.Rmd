@@ -42,10 +42,13 @@ nrow(multipleChoiceResponses)
 <br>
 
 
+#### Data Cleaning: China /Taiwan 
+#### Useful mutllayer `ifelse`!
 
-#### Data Cleaning: China /Taiwan (overwrite the dataset)
+Logic: if country is selected as Republic of China, we see (combine) them as Taiwan. If not ROC but PROC, we see them as China. If neither, it of course stays what it is.
+
 ```{r}
-multipleChoiceResponses = multipleChoiceResponses %>%
+multipleChoiceResponses = multipleChoiceResponses %>%  # it is fine to just overwrite the dataset
   mutate(Country = ifelse(Country == "Republic of China", "Taiwan", 
                             ifelse(Country == "People 's Republic of China", "China",
                                    Country)))
